@@ -1,3 +1,4 @@
+import os
 import random
 from flask import Flask, render_template
 
@@ -25,4 +26,7 @@ def main():
 
 
 if __name__ == "__main__":
-    app.run(debug=True)
+    ip = os.environ.get('IP', '127.0.0.1')
+    port = os.environ.get('PORT', 5000)
+    debug = bool(os.environ.get('DEBUG', True))
+    app.run(ip, port=port, debug=debug)

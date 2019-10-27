@@ -58,15 +58,47 @@ def single_server(host, port, correcthorsebatterystaple):
         sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
         print(f"Server starting on {host}:{port}")
         sock.bind((host, port))
-        sock.listen(1)
+        sock.listen(10)
         try:
             while True:
-                print("Listening for connection...")
                 client, addr = sock.accept()
-                print(f"Connection from {addr[0]}:{addr[1]}")
                 data = client.recv(4096)  # This should be enough for the HTML header
-                client.send(make_resp(gen.generate()).encode())
+                client.send(make_resp(correcthorsebatterystaple.generate()).encode())
                 client.close()
+        except KeyboardInterrupt:
+            print("Bye")
+
+
+def select_server(host, port, correcthorsebatterystaple):
+    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock:
+        sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+        print(f"Server starting on {host}:{port}")
+        sock.bind((host, port))
+        sock.listen(10)
+        try:
+            waiting_for_request = [sock]
+            waiting_for_response = []
+            while True:
+                read_list = [sock]
+                readable, writable, errored = [
+                    waiting_for_request,
+                    waiting_for_response,
+                    [],
+                ]
+                for s in writable:
+                    s.send(make_resp(correcthorsebatterystaple.generate()).encode())
+                    s.close()
+                    waiting_for_response.remove(s)
+                for s in readable:
+                    if s is sock:
+                        client, addr = sock.accept()
+                        waiting_for_request.append(client)
+                    else:
+                        data = s.recv(4096)  # But... really we don't care.
+                        # literally any request is going to get back a
+                        # correct horse battery staple
+                        waiting_for_response.append(s)
+                        waiting_for_request.remove(s)
         except KeyboardInterrupt:
             print("Bye")
 
@@ -74,6 +106,8 @@ def single_server(host, port, correcthorsebatterystaple):
 def do_it(launch="single", host="127.0.0.1", port=80, gen=None):  # Shia LeBeouf!
     if launch == "single":
         single_server(host=host, port=port, correcthorsebatterystaple=gen)
+    elif launch == "select":
+        select_server(host=host, port=port, correcthorsebatterystaple=gen)
     else:
         sys.exit("No launcher {} known!".format(launch))
 

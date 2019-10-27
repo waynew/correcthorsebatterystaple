@@ -3,6 +3,11 @@ correcthorsebatterystaple
 
 this: http://xkcd.com/936/
 
+You can try it out at https://correcthorsebatterystaple.waynewerner.com
+
+I don't log which passwords I generate, but if you're paranoid about security
+you probably should just generate the passwords locally.
+
 ---
 
 This project started off using Flask. Then I realized that was overkill. I

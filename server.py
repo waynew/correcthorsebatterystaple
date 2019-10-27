@@ -1,12 +1,14 @@
 import os
 import random
 import socket
+import os.path
 
+root = os.path.dirname(os.path.abspath(__file__))
 
-with open("nouns.txt") as f:
+with open(os.path.join(root, "nouns.txt")) as f:
     nouns = f.read().splitlines()
 
-with open("adjectives.txt") as f:
+with open(os.path.join(root, "adjectives.txt")) as f:
     adjectives = f.read().splitlines()
 
 
@@ -49,5 +51,5 @@ def do_it(host="127.0.0.1", port=80):  # Shia LeBeouf!
 
 if __name__ == "__main__":
     host = os.environ.get("HOST", "0.0.0.0")
-    port = os.environ.get("PORT", 8000)
+    port = int(os.environ.get("PORT", 8000))
     do_it(host=host, port=port)

@@ -2,6 +2,7 @@ import argparse
 import os
 import os.path
 import random
+import select
 import socket
 
 
@@ -21,7 +22,7 @@ parser.add_argument(
 )
 parser.add_argument(
     "--launch",
-    choices=("single", "select"),
+    choices=("single", "select", "epoll"),
     help="The type of server to run.",
     default="single",
 )
@@ -80,11 +81,9 @@ def select_server(host, port, correcthorsebatterystaple):
             waiting_for_response = []
             while True:
                 read_list = [sock]
-                readable, writable, errored = [
-                    waiting_for_request,
-                    waiting_for_response,
-                    [],
-                ]
+                readable, writable, errored = select.select(
+                    waiting_for_request, waiting_for_response, []
+                )
                 for s in writable:
                     s.send(make_resp(correcthorsebatterystaple.generate()).encode())
                     s.close()
@@ -103,11 +102,55 @@ def select_server(host, port, correcthorsebatterystaple):
             print("Bye")
 
 
+def epoll_server(host, port, correcthorsebatterystaple):
+    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock:
+        sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+        print(f"Server starting on {host}:{port}")
+        sock.bind((host, port))
+        sock.listen(10)
+        sock.setblocking(0)
+
+        epoll = select.epoll()
+        epoll.register(sock.fileno(), select.EPOLLIN)
+        try:
+            connections = {}
+            while True:
+                events = epoll.poll(1)
+                for fileno, event in events:
+                    if fileno == sock.fileno():
+                        conn, addr = sock.accept()
+                        conn.setblocking(0)
+                        epoll.register(conn.fileno(), select.EPOLLIN)
+                        connections[conn.fileno()] = conn
+                    elif event & select.EPOLLIN:
+                        data = connections[fileno].recv(
+                            4096
+                        )  # Don't care about this data either
+                        epoll.modify(fileno, select.EPOLLOUT)
+                    elif event & select.EPOLLOUT:
+                        connections[fileno].send(
+                            make_resp(correcthorsebatterystaple.generate()).encode()
+                        )
+                        epoll.modify(fileno, 0)
+                        connections[fileno].shutdown(socket.SHUT_RDWR)
+                    elif event & select.EPOLLHUP:
+                        epoll.unregister(fileno)
+                        connections[fileno].close()
+                        del connections[fileno]
+        except KeyboardInterrupt:
+            print("Bye")
+        finally:
+            epoll.unregister(sock.fileno())
+            epoll.close()
+
+
 def do_it(launch="single", host="127.0.0.1", port=80, gen=None):  # Shia LeBeouf!
     if launch == "single":
         single_server(host=host, port=port, correcthorsebatterystaple=gen)
     elif launch == "select":
         select_server(host=host, port=port, correcthorsebatterystaple=gen)
+    elif launch == "epoll":
+        epoll_server(host=host, port=port, correcthorsebatterystaple=gen)
     else:
         sys.exit("No launcher {} known!".format(launch))
 

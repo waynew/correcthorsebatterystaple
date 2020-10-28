@@ -4,9 +4,14 @@ import os.path
 import random
 import select
 import socket
+import sys
 
+__version__ = "0.2.0"
 
 parser = argparse.ArgumentParser()
+parser.add_argument(
+    "-v", "--version", help="Print version and exit", action="store_true", default=False
+)
 parser.add_argument(
     "--root",
     help="File root - a `nouns.txt` and `adjectives.txt` must be found here.",
@@ -25,6 +30,12 @@ parser.add_argument(
     choices=("single", "select", "epoll"),
     help="The type of server to run.",
     default="single",
+)
+parser.add_argument(
+    "--one",
+    action="store_true",
+    default=False,
+    help="Only generate a single passphrase on the command line.",
 )
 
 
@@ -144,7 +155,7 @@ def epoll_server(host, port, correcthorsebatterystaple):
             epoll.close()
 
 
-def do_it(launch="single", host="127.0.0.1", port=80, gen=None):  # Shia LeBeouf!
+def ok_go(launch="single", host="127.0.0.1", port=80, gen=None):
     if launch == "single":
         single_server(host=host, port=port, correcthorsebatterystaple=gen)
     elif launch == "select":
@@ -155,8 +166,11 @@ def do_it(launch="single", host="127.0.0.1", port=80, gen=None):  # Shia LeBeouf
         sys.exit("No launcher {} known!".format(launch))
 
 
-if __name__ == "__main__":
+def do_it():  # Shia LeBeouf!
     args = parser.parse_args()
+    if args.version:
+        print(__version__)
+        sys.exit()
     root = args.root
     with open(os.path.join(root, "nouns.txt")) as f:
         nouns = f.read().splitlines()
@@ -165,4 +179,11 @@ if __name__ == "__main__":
         adjectives = f.read().splitlines()
     stapelerfahrer = CorrectHorseBatteryStaple(nouns=nouns, adjectives=adjectives)
 
-    do_it(launch=args.launch, host=args.host, port=args.port, gen=stapelerfahrer)
+    if args.one:
+        print(stapelerfahrer.generate())
+    else:
+        ok_go(launch=args.launch, host=args.host, port=args.port, gen=stapelerfahrer)
+
+
+if __name__ == "__main__":
+    do_it()

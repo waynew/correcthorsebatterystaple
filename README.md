@@ -14,9 +14,19 @@ This project started off using Flask. Then I realized that was overkill. I
 decdied to make this server be able to run with pure Python, because there's
 literally no reason *not* to.
 
-You can just run this as:
+The easiest way to try it out for yourself:
 
-    python3 server.py
+    python3 -m pip install --user chbs
+
+Then you can run:
+
+    chbs -h
+
+And that should tell you everything you need to know.
+
+Or, clone this repo and run:
+
+    python3 chbs/server.py
 
 And then connect to it:
 

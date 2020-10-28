@@ -6,7 +6,7 @@ import select
 import socket
 import sys
 
-__version__ = "0.2.0"
+__version__ = "0.2.1"
 
 parser = argparse.ArgumentParser()
 parser.add_argument(

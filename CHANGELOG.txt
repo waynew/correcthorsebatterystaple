@@ -1,0 +1,18 @@
+CHANGELOG
+
+0.2.2 - 2021-11-05
+==================
+
+Fixed
+-----
+
+- Moved wordlists to the server.py because pip installs weren't working right.
+
+
+0.2.0 - 2020-10-28
+==================
+
+Added
+-----
+
+- `--one` flag for creating a single passphrase on the command line.

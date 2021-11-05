@@ -20,7 +20,6 @@ setup(
     author_email="wayne@waynewerner.com",
     url="https://github.com/waynew/correcthorsebatterystaple",
     packages=find_packages(),
-    data_files=["chbs/adjectives.txt", "chbs/nouns.txt"],
     entry_points="""
     [console_scripts]
     chbs=chbs.server:do_it
